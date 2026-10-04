@@ -29,11 +29,13 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
+import org.springframework.http.ResponseCookie;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -138,19 +140,42 @@ public class UserLoginIMPL implements UserService {
                                 //Create new session object and save in database
                                 sessionIMPL.saveNewSession(LocalDateTime.now(), LocalDateTime.now(), ipAddress, "Active", token, userRepository.findById(loginUser.getUserId()).get());
 
-                                //Set the session token in a httpOnly cookie to send back to the browser
+
+                                ResponseCookie tokenCookie = ResponseCookie.from("Session_Token", token)
+                                        .httpOnly(true)
+                                        .secure(true)           // Required for SameSite=None
+                                        .path("/")
+                                        .sameSite("None")       // This is the key addition
+                                        .build();
+
+                                httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, tokenCookie.toString());
+
+
+
+                                /*Set the session token in a httpOnly cookie to send back to the browser
                                 Cookie tokenCookie = new Cookie("Session_Token", token);
                                 tokenCookie.setHttpOnly(true);
                                 tokenCookie.setSecure(true);
                                 tokenCookie.setPath("/");
-                                httpServletResponse.addCookie(tokenCookie);
+                                httpServletResponse.addCookie(tokenCookie);*/
 
-                                //Set the session user id in a httpOnly cookie to send back to the browser
+                                /*Set the session user id in a httpOnly cookie to send back to the browser
                                 Cookie userIdCookie = new Cookie("Session_User", loginUser.getUserId());
                                 userIdCookie.setHttpOnly(true);
                                 userIdCookie.setSecure(true);
                                 userIdCookie.setPath("/");
-                                httpServletResponse.addCookie(userIdCookie);
+                                httpServletResponse.addCookie(userIdCookie);*/
+
+
+                                // Set the session user id in an httpOnly cookie
+                                ResponseCookie userIdCookie = ResponseCookie.from("Session_User", loginUser.getUserId())
+                                        .httpOnly(true)
+                                        .secure(true)
+                                        .path("/")
+                                        .sameSite("None")
+                                        .build();
+                                httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, userIdCookie.toString());
+
 
                                 // Get the authorized function IDs for the user
                                 String Sql = "SELECT function_id FROM user_function WHERE user_id = ?";
