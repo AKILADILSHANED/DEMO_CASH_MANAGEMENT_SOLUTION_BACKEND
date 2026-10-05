@@ -161,7 +161,7 @@ public class accountBalanceIMPL implements accountBalanceService {
         if (balanceDate == null) {
             throw new BalanceInputDataViolationException("Please provide a Balance Date to display Account Balances.");
         } else {
-            String Sql = "SELECT BAL.balance_id, BNK.bank_name, ACC.account_number, BAL.balance_date, BAL.balance_amount, CASE WHEN BAL.delete_status = 0 THEN 'Active' WHEN BAL.delete_status = 1 THEN 'Deleted' END AS 'delete_status', CASE WHEN BAL.deleted_by IS NULL THEN \"N/A\" ELSE USRDEL.user_first_name END as deletedBy, USR.user_first_name FROM account_balance BAL LEFT JOIN bank_account ACC ON BAL.account_id = ACC.account_id LEFT JOIN bank BNK ON ACC.bank = BNK.bank_id LEFT JOIN user USR ON BAL.entered_by = USR.user_id LEFT JOIN user USRDEL ON USR.user_id = USRDEL.user_id WHERE BAL.balance_date = ?";
+            String Sql = "SELECT BAL.balance_id, BNK.bank_name, ACC.account_number, BAL.balance_date, BAL.balance_amount, CASE WHEN BAL.delete_status = 0 THEN 'Active' WHEN BAL.delete_status = 1 THEN 'Deleted' END AS 'delete_status', CASE WHEN BAL.deleted_by IS NULL THEN \'N/A\' ELSE USRDEL.user_first_name END as deletedBy, USR.user_first_name FROM account_balance BAL LEFT JOIN bank_account ACC ON BAL.account_id = ACC.account_id LEFT JOIN bank BNK ON ACC.bank = BNK.bank_id LEFT JOIN user USR ON BAL.entered_by = USR.user_id LEFT JOIN user USRDEL ON USR.user_id = USRDEL.user_id WHERE BAL.balance_date = ?";
             List<getAllBalancesDTO> balanceList = template.query(Sql, new Object[]{balanceDate}, new accountBalanceMapper());
             //Check whether any account balances are available for user provided balance date;
             if (balanceList.isEmpty()) {
